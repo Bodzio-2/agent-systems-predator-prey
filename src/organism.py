@@ -40,16 +40,67 @@ class Animal(Organism):
     
 
     def move(self, direction: tuple[int, int]) -> None:
-        pass
+        """
+        Move the animal in the specified direction
+        direction: (dx, dy) tuple indicating the direction to move
+        """
+        x, y = self.position
+        dx, dy = direction
+        dx = max(min(dx, self.speed), -self.speed)
+        dy = max(min(dy, self.speed), -self.speed)
+        self.position = (x + dx, y + dy)
+        self.energy -= (abs(dx) + abs(dy)) * 0.5
 
-    def reproduce(self, energy: int) -> None:
-        pass
+    def reproduce(self) -> 'Animal':
+        """
+        Create a new animal of the same type if reproduction conditions are met
+        Returns a new animal or None if reproduction isn't possible
+        """
+        if self.energy > self.reproduction_threshold:
+
+            offspring_energy = self.energy // 2
+            self.energy -= offspring_energy
+            
+
+            return self.__class__(
+                energy=offspring_energy,
+                nutrition=self.nutrition,
+                position=self.position, 
+                speed=self.speed,
+                reproduction_rate=self.reproduction_rate,
+                reproduction_threshold=self.reproduction_threshold,
+                fov=self.fov
+            )
+        return None
 
     def consume(self, food: Organism) -> None:
-        pass
+        """
+        Consume another organism to gain energy
+        food: the organism to consume
+        """
 
-    def flee_chance(self) -> None:
-        pass
+        gained_energy = food.get_nutrition()
+        
+        if isinstance(self, Stage2) and isinstance(food, Plant):
+            gained_energy *= 1.5 
+            
+        self.energy += gained_energy
+
+    def flee_chance(self, predator: 'Animal') -> bool:
+        """
+        Determine if this animal can flee from a predator
+        predator: the animal trying to consume this one
+        Returns: True if the animal successfully flees, False otherwise
+        """
+        if self.speed > predator.speed:
+            return True
+        elif self.speed == predator.speed:
+            import random
+            return random.random() > 0.5
+        else:
+            import random
+            ratio = self.speed / predator.speed
+            return random.random() < ratio
 
 
 class Plant(Organism):
@@ -69,18 +120,48 @@ class Plant(Organism):
     def get_position(self):
         return self.position
     
-    def grow(growRate: float) -> None:
-        pass
+    def grow(self, sunlight: int = 0) -> None:
+        """Increase the plant's energy and nutrition based on sunlight and grow rate"""
+        growth = max(1, int(sunlight * self.grow_rate * 0.6))  
+        self.energy += growth
+        self.nutrition += growth // 2  
 
 
 class Stage2(Animal):
-    pass
+    """Primary Herbivore - eats plants only"""
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        
+    def can_eat(self, organism: Organism) -> bool:
+        """Stage2 animals can only eat plants"""
+        return isinstance(organism, Plant)
+
 
 class Stage3(Animal):
-    pass
+    """Omnivore - eats plants and Stage2 animals"""
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        
+    def can_eat(self, organism: Organism) -> bool:
+        """Stage3 animals can eat plants and Stage2 animals"""
+        return isinstance(organism, Plant) or isinstance(organism, Stage2)
+
 
 class Stage4(Animal):
-    pass
+    """Primary Carnivore - eats Stage2 and Stage3 animals"""
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        
+    def can_eat(self, organism: Organism) -> bool:
+        """Stage4 animals can eat Stage2 and Stage3 animals"""
+        return isinstance(organism, Stage2) or isinstance(organism, Stage3)
+
 
 class Stage5(Animal):
-    pass
+    """Apex Predator - eats all other animal types"""
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        
+    def can_eat(self, organism: Organism) -> bool:
+        """Stage5 animals can eat all other animals but not plants"""
+        return isinstance(organism, Animal) and not isinstance(organism, Stage5)
