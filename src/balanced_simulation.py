@@ -1,6 +1,6 @@
-from chainy import Chainy
-from organism import *
-from grid_element import *
+from sim.chainy import Chainy
+from sim.organism import *
+from sim.grid_element import *
 import random
 
 def run_balanced_simulation():

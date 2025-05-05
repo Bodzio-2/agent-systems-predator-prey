@@ -135,6 +135,9 @@ class Stage2(Animal):
     def can_eat(self, organism: Organism) -> bool:
         """Stage2 animals can only eat plants"""
         return isinstance(organism, Plant)
+    
+    def __str__(self):
+        return "2"
 
 
 class Stage3(Animal):
@@ -145,6 +148,9 @@ class Stage3(Animal):
     def can_eat(self, organism: Organism) -> bool:
         """Stage3 animals can eat plants and Stage2 animals"""
         return isinstance(organism, Plant) or isinstance(organism, Stage2)
+    
+    def __str__(self):
+        return "3"
 
 
 class Stage4(Animal):
@@ -155,6 +161,9 @@ class Stage4(Animal):
     def can_eat(self, organism: Organism) -> bool:
         """Stage4 animals can eat Stage2 and Stage3 animals"""
         return isinstance(organism, Stage2) or isinstance(organism, Stage3)
+    
+    def __str__(self):
+        return "4"
 
 
 class Stage5(Animal):
@@ -165,3 +174,6 @@ class Stage5(Animal):
     def can_eat(self, organism: Organism) -> bool:
         """Stage5 animals can eat all other animals but not plants"""
         return isinstance(organism, Animal) and not isinstance(organism, Stage5)
+    
+    def __str__(self):
+        return "5"
