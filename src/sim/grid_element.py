@@ -1,4 +1,4 @@
-from organism import *
+from sim.organism import *
 from enum import Enum
 
 class TerrainType(Enum):
