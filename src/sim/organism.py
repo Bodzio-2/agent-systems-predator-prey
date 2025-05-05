@@ -52,6 +52,7 @@ class Animal(Organism):
         pass
 
 
+
 class Plant(Organism):
 
     def __init__(self, **kwargs) -> None:
@@ -74,13 +75,21 @@ class Plant(Organism):
 
 
 class Stage2(Animal):
-    pass
+
+    def __str__(self):
+        return '2'
 
 class Stage3(Animal):
-    pass
+    
+    def __str__(self):
+        return '3'
 
 class Stage4(Animal):
-    pass
+    
+    def __str__(self):
+        return '4'
 
 class Stage5(Animal):
-    pass
+    
+    def __str__(self):
+        return '5'

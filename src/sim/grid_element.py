@@ -6,6 +6,13 @@ class TerrainType(Enum):
     WATER = 2
     DIRT = 3
 
+    def colors_dict():
+        return {
+            TerrainType.ROCK: "gray",
+            TerrainType.WATER: "lightblue",
+            TerrainType.DIRT: "brown"
+        }
+
 class GridElement:
     
 
