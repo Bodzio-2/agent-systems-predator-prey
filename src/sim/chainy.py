@@ -1,5 +1,5 @@
-from organism import *
-from grid_element import *
+from sim.organism import *
+from sim.grid_element import *
 
 class Chainy:
     def __init__(self):
