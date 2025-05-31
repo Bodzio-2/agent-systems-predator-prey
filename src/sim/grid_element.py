@@ -9,7 +9,7 @@ class TerrainType(Enum):
     def colors_dict():
         return {
             TerrainType.ROCK: "gray",
-            TerrainType.WATER: "lightblue",
+            TerrainType.WATER: "blue",
             TerrainType.DIRT: "brown"
         }
 

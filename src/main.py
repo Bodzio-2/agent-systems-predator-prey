@@ -161,7 +161,7 @@ def run_balanced_simulation_with_gui():
 
     print("Starting simulation with GUI...")
 
-    window = MainWindow(grid_height=grid_size, grid_width=grid_size, grid_square_size=25)
+    window = MainWindow(grid_height=grid_size, grid_width=grid_size, grid_square_size=50)
     window.run_simulation_step(sim, max_steps=100, delay=1000)
     window.run()
 
