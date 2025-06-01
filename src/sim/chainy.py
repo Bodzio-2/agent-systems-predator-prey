@@ -10,6 +10,19 @@ class Chainy:
         self.sim_speed: float = 1
         self.stats: list[float] = []
 
+    def get_dict(self) -> dict:
+        # initial_dict = vars(self)
+        initial_dict = {
+            'size_x': self.size[0],
+            'size_y': self.size[1],
+            'time_step': self.time_step,
+            'sim_speed': self.sim_speed,
+            'stats': self.stats
+        }
+        initial_dict['organisms'] = [i.get_dict() for i in self.organisms]
+        initial_dict['grid'] = [[j.get_dict() for j in i] for i in self.grid]
+        return initial_dict
+
     def init_grid(self, width: int = 50, height: int = 50) -> None:
         import random
         self.size = (width, height)

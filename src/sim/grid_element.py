@@ -1,10 +1,11 @@
 from sim.organism import *
 from enum import Enum
+import json
 
-class TerrainType(Enum):
-    ROCK = 1
-    WATER = 2
-    DIRT = 3
+class TerrainType(str, Enum):
+    ROCK = "ROCK"
+    WATER = "WATER"
+    DIRT = "DIRT"
 
     def colors_dict():
         return {
@@ -22,7 +23,17 @@ class GridElement:
         self.terrain: TerrainType = kwargs['terrain']
         self.sunlight_lvl: int = 0
 
-    
+    def get_dict(self) -> dict:
+        # initial_dict = vars(self)
+        initial_dict = {
+            'position_x': self.position[0],
+            'position_y': self.position[1],
+            'terrain': json.dumps(self.terrain).strip("\""),
+            'organisms': [i.get_dict() for i in self.organisms],
+            'sunlight_lvl': self.sunlight_lvl
+        }
+        return initial_dict
+
     def get_neighbors(self, fov: int) -> list[Organism]:
         """
         This method should be called from Chainy to get neighboring organisms within field of view.

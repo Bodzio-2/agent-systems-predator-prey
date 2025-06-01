@@ -1,5 +1,13 @@
 from abc import ABC, abstractmethod
+from enum import Enum
+import json
 
+class OrganismType(str, Enum):
+    PLANT = "PLANT"
+    STAGE2 = "STAGE2"
+    STAGE3 = "STAGE3"
+    STAGE4 = "STAGE4"
+    STAGE5 = "STAGE5"
 
 class Organism(ABC):
 
@@ -15,6 +23,25 @@ class Organism(ABC):
     def get_position(self) -> tuple[int, int]:
         pass
 
+    @abstractmethod
+    def get_organism_type(self) -> OrganismType:
+        pass
+
+    def get_dict(self) -> dict:
+        # initial_dict = vars(self)
+        initial_dict = {
+            'energy': int(self.get_energy()),
+            # 'nutrition': self.get_nutrition(),
+            # 'position': self.get_position(),
+            # 'speed': self.speed if hasattr(self, 'speed') else 0,
+            # 'reproduction_rate': self.reproduction_rate if hasattr(self, 'reproduction_rate') else 0,
+            # 'reproduction_threshold': self.reproduction_threshold if hasattr(self, 'reproduction_threshold') else 0,
+            # 'fov': self.fov if hasattr(self, 'fov') else 0,
+            # 'grow_rate': self.grow_rate if hasattr(self, 'grow_rate') else 0
+        }
+        initial_dict['organism_type'] = json.dumps(self.get_organism_type()).strip('\"')
+        return initial_dict
+
 
 
 class Animal(Organism):
@@ -27,8 +54,6 @@ class Animal(Organism):
         self.reproduction_threshold: float = kwargs['reproduction_threshold']
         self.fov: int = kwargs['fov']
 
-    
-
     def get_energy(self):
         return self.energy
     
@@ -38,6 +63,16 @@ class Animal(Organism):
     def get_position(self):
         return self.position
     
+    def get_organism_type(self):
+        if isinstance(self, Stage2):
+            return OrganismType.STAGE2
+        elif isinstance(self, Stage3):
+            return OrganismType.STAGE3
+        elif isinstance(self, Stage4):
+            return OrganismType.STAGE4
+        else:
+            return OrganismType.STAGE5
+
 
     def move(self, direction: tuple[int, int]) -> None:
         """
@@ -120,6 +155,9 @@ class Plant(Organism):
     def get_position(self):
         return self.position
     
+    def get_organism_type(self):
+        return OrganismType.PLANT
+
     def grow(self, sunlight: int = 0) -> None:
         """Increase the plant's energy and nutrition based on sunlight and grow rate"""
         growth = max(1, int(sunlight * self.grow_rate * 0.6))  
