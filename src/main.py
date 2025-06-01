@@ -1,14 +1,18 @@
 from sim.grid_element import TerrainType, GridElement
 from sim.organism import *
 from sim.chainy import Chainy
+from unity_connection import UnityConnection
 from tkinter import *
 import random
 import time
 
 
+def utf8len(s):
+    return len(s.encode('utf-8'))
+
 class MainWindow:
 
-    def __init__(self, grid_height: int = 20, grid_width: int = 20, grid_square_size: int = 50) -> None:
+    def __init__(self, grid_height: int = 20, grid_width: int = 20, grid_square_size: int = 50, unity_visualisation: bool = True) -> None:
         self.grid_height: int = grid_height
         self.grid_width: int = grid_width
         self.grid_square_size: int = grid_square_size
@@ -21,11 +25,19 @@ class MainWindow:
         self.height = self.grid_square_size * self.grid_height
         self.canvas = Canvas(self.window, background='white', width=self.width, height=self.height)
 
+        self.unity_connection = UnityConnection() if unity_visualisation else None
+
         self.create_grid()
         self.canvas.grid(row=0, column=0)
 
     def refresh_window(self, chainy: Chainy = None) -> None:
         self.canvas.delete("grid_element")
+
+        if chainy and self.unity_connection:
+            print("\n")
+            # print(chainy.get_dict())
+            self.unity_connection.send_data(json.dumps(chainy.get_dict()))
+            print(utf8len(json.dumps(chainy.get_dict())))
 
         if not chainy:
             return
@@ -72,6 +84,8 @@ class MainWindow:
 
     def run_simulation_step(self, sim: Chainy, max_steps=100, delay=1000000000, step=0):
         if step >= max_steps:
+            if self.unity_connection:
+                self.unity_connection.send_data("<EOF>")
             return
         sim.update()
         self.refresh_window(sim)
@@ -162,7 +176,7 @@ def run_balanced_simulation_with_gui():
     print("Starting simulation with GUI...")
 
     window = MainWindow(grid_height=grid_size, grid_width=grid_size, grid_square_size=50)
-    window.run_simulation_step(sim, max_steps=100, delay=1000)
+    window.run_simulation_step(sim, max_steps=100, delay=0)
     window.run()
 
 
