@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from enum import Enum
 import json
+import random
 
 class OrganismType(str, Enum):
     PLANT = "PLANT"
@@ -84,7 +85,7 @@ class Animal(Organism):
         dx = max(min(dx, self.speed), -self.speed)
         dy = max(min(dy, self.speed), -self.speed)
         self.position = (x + dx, y + dy)
-        self.energy -= (abs(dx) + abs(dy)) * 0.5
+        self.energy -= (abs(dx) + abs(dy)) * (0.5 if self.stage == 2 else 0.15)
 
     def reproduce(self) -> 'Animal':
         """
@@ -108,18 +109,27 @@ class Animal(Organism):
             )
         return None
 
-    def consume(self, food: Organism) -> None:
+    def eat(self, food: Organism, sim=None) -> None:
         """
-        Consume another organism to gain energy
-        food: the organism to consume
+        Eat a food organism, applying the 10% energy rule if it's an animal,
+        or standard gain if it's a plant.
         """
-
-        gained_energy = food.get_nutrition()
+        if isinstance(food, Plant):
+            gained_energy = food.get_nutrition()
+            if isinstance(self, Stage2):
+                gained_energy *= 1.5
+            self.energy += gained_energy
+        elif isinstance(food, Animal):
+            gained_energy = int(food.energy * 0.1)
+            self.energy += gained_energy
+        else:
+            # Fallback: just use nutrition
+            self.energy += food.get_nutrition()
         
-        if isinstance(self, Stage2) and isinstance(food, Plant):
-            gained_energy *= 1.5 
-            
-        self.energy += gained_energy
+        # Remove the eaten organism from the simulation if sim is provided
+        if sim:
+            sim.remove_organism(food)
+
 
     def flee_chance(self, predator: 'Animal') -> bool:
         """
@@ -160,9 +170,30 @@ class Plant(Organism):
 
     def grow(self, sunlight: int = 0) -> None:
         """Increase the plant's energy and nutrition based on sunlight and grow rate"""
-        growth = max(1, int(sunlight * self.grow_rate * 0.6))  
+        growth = max(1, int(sunlight * self.grow_rate * 0.2))  # Buffed growth
         self.energy += growth
-        self.nutrition += growth // 2  
+        self.nutrition += growth // 2
+
+        # Optional plant reproduction (spreading)
+        if self.energy > 60 and random.random() < 0.05:  # 5% chance to reproduce
+            # Generate nearby coordinates (8 surrounding tiles)
+            nearby = [(self.position[0] + dx, self.position[1] + dy)
+                    for dx in [-1, 0, 1] for dy in [-1, 0, 1]
+                    if not (dx == 0 and dy == 0)]
+
+            random.shuffle(nearby)  # Randomize to avoid directional bias
+
+            for nx, ny in nearby:
+                # Ensure the location is in-bounds and empty
+                if 0 <= nx < sim.size[0] and 0 <= ny < sim.size[1]:
+                    if sim.get_organism_at((nx, ny)) is None:
+                        sim.add_organism("plant", (nx, ny),
+                                        energy=10,
+                                        nutrition=5,
+                                        grow_rate=self.grow_rate * 0.9)  # slightly lower grow rate
+                        self.energy -= 10  # Energy cost to spawn a new plant
+                        break  # Reproduce only once per grow cycle
+
 
 
 class Stage2(Animal):

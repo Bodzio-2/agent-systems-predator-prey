@@ -19,7 +19,7 @@ class Chainy:
             'sim_speed': self.sim_speed,
             'stats': self.stats
         }
-        initial_dict['organisms'] = [i.get_dict() for i in self.organisms]
+        # initial_dict['organisms'] = [i.get_dict() for i in self.organisms]
         initial_dict['grid'] = [[j.get_dict() for j in i] for i in self.grid]
         return initial_dict
 
@@ -133,7 +133,7 @@ class Chainy:
                             can_consume = not target.flee_chance(organism)
                             
                         if can_consume:
-                            organism.consume(target)
+                            organism.eat(target)
                             organisms_to_remove.append(target)
                             self.grid[new_y][new_x].kill_organism(target)
                             
@@ -206,6 +206,12 @@ class Chainy:
                 self.grid[y][x].add_organism(plant)
                 count += 1
                 
+    def remove_organism(self, organism):
+        """Remove organism from simulation."""
+        x, y = organism.get_position()
+        if (x, y) in self.grid:  # or however you're tracking them
+            del self.grid[(x, y)]
+    
     def generate_stats(self) -> None:
         plant_count = sum(1 for org in self.organisms if isinstance(org, Plant))
         stage2_count = sum(1 for org in self.organisms if isinstance(org, Stage2))
@@ -301,3 +307,7 @@ class Chainy:
             'stage5': sum(1 for org in self.organisms if isinstance(org, Stage5))
         }
         return counts
+
+    def get_organism_total_count(self) -> int:
+        total_count = sum(1 for org in self.organisms if isinstance(org, (Plant, Stage2, Stage3, Stage4, Stage5)))
+        return total_count
